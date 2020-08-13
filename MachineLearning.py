@@ -2,6 +2,7 @@ import sklearn
 import random
 from nltk.corpus import names
 from sklearn.naive_bayes import *
+import matplotlib.pyplot as plt
 
 class MLExampleNames:
 	
@@ -64,18 +65,79 @@ class MLExampleNames:
 		featureResult=int.from_bytes(bytes(word[:2].lower(),"UTF8"),"little")
 		return featureResult
 		
-	def fit(self,clf,trainData):
+	def Fit(self,clf,trainData):
 		x,y=self.XYSplit(trainData)
 		x_feat=self.FeatureExtract(x)
 		clf.fit(x_feat,y)
 		
-	def run(self,clfChoice=1,trainPercentage=70):
+	def Run(self,clfChoice=1,trainPercentage=70):
+		#print("Running accuracy test")
 		clf=self.clfList[clfChoice]
 		print("With {1}% of dataset, Training {0}".format(str(type(clf))[28:-2],trainPercentage),end="\t")
 		train,test=self.TrainTestSplit(trainPercentage)
-		self.fit(clf,train)
+		self.Fit(clf,train)
 		x_test,y_test=self.XYSplit(test)
-		print(clf.score(self.FeatureExtract(x_test),y_test))
+		try:
+			print(clf.score(self.FeatureExtract(x_test),y_test))
+		except IndexError:
+			# https://github.com/scikit-learn/scikit-learn/pull/16326
+			print("Index Error. Refer to github.com/scikit-learn/scikit-learn/pull/16326")
+
+	def Evaluate(self,clfChoice=1,trainPercentage=70,verbose=True):
+		clf=self.clfList[clfChoice]
+		print("Evaluation")
+		print("With {1}% of dataset, Training {0}".format(str(type(clf))[28:-2],trainPercentage))
+		train,test=self.TrainTestSplit(trainPercentage)
+		self.Fit(clf,train)
+		x_test,y_test=self.XYSplit(test)
+		x_feat=self.FeatureExtract(x_test)
+		if verbose:
+			tM=0
+			tF=0
+			fM=0
+			fF=0
+			try:
+				for i in range(len(x_test)):
+					if (clf.predict([x_feat[i]])[0]=="M" and y_test[i]=="M"):
+						tM+=1
+					elif (clf.predict([x_feat[i]])[0]=="F" and y_test[i]=="F"):
+						tF+=1
+					elif (clf.predict([x_feat[i]])[0]=="M" and y_test[i]=="F"):
+						fM+=1
+					elif (clf.predict([x_feat[i]])[0]=="F" and y_test[i]=="M"):
+						fF+=1
+					else:
+						print("Something went wrong")
+			except IndexError:
+					# https://github.com/scikit-learn/scikit-learn/pull/16326
+					print("Index Error. Refer to github.com/scikit-learn/scikit-learn/pull/16326")
+					return
+				
+			# Among all actual positives, how much did I get correct?
+			maleRecall=tM/(tM+fF)
+			femaleRecall=tF/(tF+fM)
+			
+			# Among all claimed positives, how much did I get correct?
+			malePrecision=tM/(tM+fM)
+			femalePrecision=tF/(tF+fF)
+			
+			# Print out hard result
+			print("\n\t\t__Predicted Label__\n True|\tTrue Male: {0}\t\tFalse Female: {3}\nLabel|\tFalse Male: {2}\t\tTrue Female: {1}".format(tM,tF,fM,fF))
+			
+			# Print out Recall and Precisions
+			print("\nRecall is among all true labels and precision is among predicted labels")
+			print("mRecall: {0:.3f}\tmPrecision: {2:.3f}\nfRecall: {1:.3f}\tfPrecision:{3:.3f}".format(maleRecall,femaleRecall,malePrecision,femalePrecision))
+			
+			# Print out counfusion Matrix
+			print("\nConfusion Matrix based on recall:\nTL\\PL\tM\tF\nM\t{0:.2f}\t{1:.2f}\nF\t{2:.2f}\t{3:.2f}".format(maleRecall,1-maleRecall,1-femaleRecall,femaleRecall))
+			
+			# Print out accuracy
+			print("\nAccuracy: {0:.3f}".format((tM+tF)/len(y_test)))
+		else:
+			display=sklearn.metrics.plot_confusion_matrix(clf,x_feat,y_test,cmap=plt.cm.Blues,normalize='true')
+			plt.show()
+		
+			
 
 class MLExampleSound:
 	def __init__(self):
@@ -84,12 +146,8 @@ class MLExampleSound:
 if __name__=="__main__":
 	MLEx=MLExampleNames()
 	for clfChoice in range(5):
-		print()
-		print()
 		for trainingPercentage in range(10,91,10):
-			try:
-				MLEx.run(clfChoice,trainingPercentage)
-			except IndexError:
-				# https://github.com/scikit-learn/scikit-learn/pull/16326
-				print("Index Error. Refer to github.com/scikit-learn/scikit-learn/pull/16326")
+			MLEx.Run(clfChoice,trainingPercentage)
+		print()
+	MLEx.Evaluate(verbose=False)
 	input()
