@@ -15,7 +15,7 @@ void setup(){
 }
 
 void loop(){
-  readValue=analogRead(A6);
+  readValue=analogRead(A3);
   localAvg=(prev1+prev2+prev3+prev4)/4;
   if(abs((int)(readValue-localAvg))>8){
     if(timeout>bufflength){
@@ -41,7 +41,7 @@ void loop(){
       Serial.write(buff,bufflength*2);
       byte temp[8] ={highByte(prev3),lowByte(prev3),highByte(prev2),lowByte(prev2),highByte(prev1),lowByte(prev1),highByte(readValue),lowByte(readValue)};
       Serial.write(temp,8);
-      Serial.write('\n');
+      Serial.write('\n');Serial.write('\n');
       timeout=-1;
     }
   }
