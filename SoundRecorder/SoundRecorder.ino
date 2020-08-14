@@ -10,7 +10,7 @@ int timestamp=0;
 byte buff[bufflength*2];
 
 void setup(){
-  Serial.begin(9600);
+  Serial.begin(115200);
   readValue=826;prev1=readValue;prev2=prev1;prev3=prev2;prev4=prev3;
 }
 
