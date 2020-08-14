@@ -10,7 +10,7 @@ def ChooseDevice():
     selection=int(input("Choose your serial device\n>>> "))
     while (selection<0 or selection>len(devices)):
         selection=int(input("Choose a valid number from the list\n>>> "))
-    device = serial.Serial("/dev/"+devices[selection],57600)
+    device = serial.Serial("/dev/"+devices[selection],115200)
     return device
 
 def RecordData(device):
