@@ -10,7 +10,7 @@ def ChooseDevice():
     selection=int(input("Choose your serial device\n>>> "))
     while (selection<0 or selection>len(devices)):
         selection=int(input("Choose a valid number from the list\n>>> "))
-    device = serial.Serial("/dev/"+devices[selection],115200)
+    device = serial.Serial("/dev/"+devices[selection],230400)
     return device
 
 def RecordData(device):
@@ -24,12 +24,10 @@ def RecordData(device):
             rawRead=None
             if device.in_waiting>0:
                 rawRead=device.read()
-                print("Initial read")
             else:
                 time.sleep(0.5)
             # Checking the start of a transmission
             if(rawRead==b'\n'):
-                print("Read One new Line")
                 if(device.read()==b'\n'):
                     # Two newlines are the starting mark
                     print("Recording")
