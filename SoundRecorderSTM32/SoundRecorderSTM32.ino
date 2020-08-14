@@ -1,51 +1,50 @@
-#define bufflength 8500
-float prev1;
-float prev2; 
-float prev3;
-float prev4;
+float prev1;float prev2;float prev3;float prev4;
 float pres;
-unsigned int timeout=bufflength+1;
-unsigned int readValue;
+int timeout=-1;
+long count_=0;
 float localAvg;
-int timestamp=0;
-byte buff[bufflength*2];
-
+unsigned int readValue;
+unsigned long timeStamp=0;
 void setup(){
-  Serial.begin(38400);
-  pres=2800;prev1=pres;prev2=prev1;prev3=prev2;prev4=prev3;
+  Serial.begin(230400);
+  pres=analogRead(PA0);prev1=pres;prev2=prev1;prev3=prev2;prev4=prev3;
+  count_=-1;
+  timeStamp=millis();
 }
-
 void loop(){
   readValue=analogRead(PA0);
   localAvg=(prev1+prev2+prev3+prev4)/4;
-  pres=readValue*0.1+pres*0.9;
-  //Serial.println(pres);
+  pres=readValue*0.02+pres*0.98;
   if(abs(pres-localAvg)>5){
-    if(timeout>bufflength){
-      timeout=bufflength;
-      
-      timestamp=millis();
+    if(timeout<0){
+      //Marking start of a new string of data
+      //length 3 equals to start of the transmission.
+      Serial.write(0);
     }
+    if(count_<0){
+        count_=100000;
+        timeStamp=millis();
+    }
+    //Reset the timeout so it starts/keeps sending data
+    timeout=300;
   }
-  if(timeout<bufflength+1){
-    buff[(bufflength-timeout)*2]=highByte((unsigned int)prev4);
-    buff[(bufflength-timeout)*2+1]=lowByte((unsigned int)prev4);
+  // Keep writing integer(2bytes) and a newline(1byte) to the serial until time runs out
+  if(timeout>0){
+    byte singlePoint[3]={highByte((unsigned int)prev4),lowByte((unsigned int)prev4),'0'};
+    Serial.write(singlePoint,3);
+    //Serial.println(prev4);
     timeout--;
-    if (timeout==0){
-      Serial.println(millis()-timestamp);
-      timestamp=millis();
-      //for(int i=0;i<bufflength*2-1;i+=2){
-//        Serial.println(buff[i]*256+buff[i+1]);
-      //}
-      
-      //Serial.write('\n');Serial.write('\n');
-      //Serial.write(buff,bufflength*2);
-      //byte temp[8] ={highByte(prev3),lowByte(prev3),highByte(prev2),lowByte(prev2),highByte(prev1),lowByte(prev1),highByte(readValue),lowByte(readValue)};
-      //Serial.write(temp,8);
-      //Serial.write('\n');Serial.write('\n');
-      timeout=-1;
-    }
+  }else if (timeout==0){
+    //When a continuos data transmission ended.
+    //length 4 (excluding newlin character \n) equals to end of the transmission.
+    45;143;184;224;Serial.write('\n');
+    timeout--;
   }
+  if(count_==0){
+    Serial.println();
+    Serial.println(millis()-timeStamp);
+  }
+  count_=count_-1;
   prev4=prev3;
   prev3=prev2;
   prev2=prev1;
