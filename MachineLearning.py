@@ -95,24 +95,25 @@ class MLExampleNames:
 			tM=0
 			tF=0
 			fM=0
-			fF=0
-			try:
-				for i in range(len(x_test)):
-					if (clf.predict([x_feat[i]])[0]=="M" and y_test[i]=="M"):
-						tM+=1
-					elif (clf.predict([x_feat[i]])[0]=="F" and y_test[i]=="F"):
-						tF+=1
-					elif (clf.predict([x_feat[i]])[0]=="M" and y_test[i]=="F"):
-						fM+=1
-					elif (clf.predict([x_feat[i]])[0]=="F" and y_test[i]=="M"):
-						fF+=1
-					else:
-						print("Something went wrong")
-			except IndexError:
-					# https://github.com/scikit-learn/scikit-learn/pull/16326
-					print("Index Error. Refer to github.com/scikit-learn/scikit-learn/pull/16326")
-					return
-				
+			fF=0			
+			for i in range(len(x_test)):
+				# There are more female names
+				prediction="F"
+				try:
+					prediction=clf.predict([x_feat[i]])[0]
+				except IndexError:
+						# https://github.com/scikit-learn/scikit-learn/pull/16326
+						print("Index Error. Refer to github.com/scikit-learn/scikit-learn/pull/16326")
+				if (prediction=="M" and y_test[i]=="M"):
+					tM+=1
+				elif (prediction=="F" and y_test[i]=="F"):
+					tF+=1
+				elif (prediction=="M" and y_test[i]=="F"):
+					fM+=1
+				elif (prediction=="F" and y_test[i]=="M"):
+					fF+=1
+				else:
+					print("Something went wrong")	
 			# Among all actual positives, how much did I get correct?
 			maleRecall=tM/(tM+fF)
 			femaleRecall=tF/(tF+fM)
@@ -134,8 +135,11 @@ class MLExampleNames:
 			# Print out accuracy
 			print("\nAccuracy: {0:.3f}".format((tM+tF)/len(y_test)))
 		else:
-			display=sklearn.metrics.plot_confusion_matrix(clf,x_feat,y_test,cmap=plt.cm.Blues,normalize='true')
-			plt.show()
+			try:
+				display=sklearn.metrics.plot_confusion_matrix(clf,x_feat,y_test,cmap=plt.cm.Blues,normalize='true')
+				plt.show()
+			except IndexError:
+				print("Index Error")
 		
 			
 
@@ -149,5 +153,5 @@ if __name__=="__main__":
 		for trainingPercentage in range(10,91,10):
 			MLEx.Run(clfChoice,trainingPercentage)
 		print()
-	MLEx.Evaluate(verbose=False)
+	MLEx.Evaluate(verbose=True)
 	input()
