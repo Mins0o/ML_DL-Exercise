@@ -3,6 +3,7 @@ import random
 from nltk.corpus import names
 from sklearn.naive_bayes import *
 import matplotlib.pyplot as plt
+import csv
 
 class MLExampleNames:
 	
@@ -145,7 +146,11 @@ class MLExampleNames:
 
 class MLExampleSound:
 	def __init__(self):
-		pass
+        """1. Read the .tsv file saved by the DoorOpener recording and return data format. Separate X (data) and Y (label)"""
+            rawRead=list(csv.reader(open(data.tsv, 'r'), delimiter='\t'))
+            self.dataSet=[[int(x) for x in line[0].split(",")] for line in rawRead],[line[1] for line in rawRead]
+           
+
 		
 if __name__=="__main__":
 	MLEx=MLExampleNames()

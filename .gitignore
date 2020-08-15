@@ -36,3 +36,4 @@
 *.dwl2
 
 */build/
+*.swp

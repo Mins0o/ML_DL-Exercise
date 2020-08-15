@@ -18,7 +18,8 @@ def RecordData(device):
     with open("./"+fileName,'a') as dataFile:
        # Flush any incomplete transmission in the buffer.
         while (device.in_waiting>0):
-            rawRead=device.read()
+            rawRead=device.reset_input_buffer()
+        print("Flushed Buffer")
         # Loop and wait for input
         while True:
             rawRead=None
@@ -32,20 +33,25 @@ def RecordData(device):
                     # Two newlines are the starting mark
                     print("Recording")
                     pcmData=[]
-                    intRead=0
-                    while (not intRead==2570):
+                    intRead=-1
+                    while (not intRead==0):
+                        #print(".",end="")
                         intRead=ReadTwoBytesToInt(device)
                         pcmData.append(intRead)
                     label=input("Label in one letter\nAdd another letter to finish recording\nYou can skip by not inputting any letters\n>>> ")
                     if len(label)==1:
                         for i in pcmData[:-2]: 
                             dataFile.write("{0},".format(i))
-                        dataFile.write(str(pcmData[-2]))
+                        try:
+                            dataFile.write(str(pcmData[-2]))
+                        except IndexError:
+                            print("File write failed. len(pcmData)={0}",format(len(pcmData)))
                         dataFile.write("\t{0}\n".format(label))
                     elif len(label)>1: 
                         return
+                    # Flush anything that came in during user interface
                     while device.in_waiting>0:
-                        device.read()
+                        device.reset_input_buffer()
                     pcmData=[]
 
 def ReadTwoBytesToInt(device):
