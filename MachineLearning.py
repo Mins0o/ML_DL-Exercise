@@ -239,5 +239,5 @@ if __name__=="__main__":
 	
 	MLExS=MLExampleSound()
 	# def Evaluate(self,targetLabels=[],clfChoice=1,trainPercentage=70,verbose=True)
-	MLExS.Evaluate(["t"],0,60)
+	MLExS.Evaluate(["t"],1,80)
 	input()
