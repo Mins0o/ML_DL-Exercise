@@ -8,9 +8,9 @@ def TsvToLine(filePath):
 		data=[]
 		for line in lines:
 			try:
-				singleLine=([[int(x) for x in col.split(',')] for col in line[:-1]],line[-1])
+				singleLine=([int(x) for x in line[0].split(',')],line[-1])
 			except ValueError:
-				singleLine=([[x for x in col.split(',')] for col in line[:-1]],line[-1])
+				singleLine=([x for x in line[0].split(',')],line[-1])
 			data.append(singleLine)
 	return data
 	
@@ -35,9 +35,9 @@ def TsvToXY(filePath):
 		label=[line[-1] for line in lines]
 	return(data,label)
 	
-def FourierTransform(signal,samplingRate,verbose=False):
+def FourierTransform(signal,samplingRate,title="",verbose=False):
 	timeAxis=np.arange(0,len(signal)/samplingRate,1/samplingRate,dtype="double")
-	frequencyCap=samplingRate//2
+	frequencyCap=samplingRate//2 # Nyquist Theorem
 	if not type(signal) == np.ndarray:
 		try:
 			signal=np.array(signal)
@@ -45,9 +45,9 @@ def FourierTransform(signal,samplingRate,verbose=False):
 			print("FourierTransform(): Please input an numpy array")
 			return []
 			
-	signal=normalize(signal)
+	signal=Normalize(signal)
 	
-	frequencyChart=createFrequencyChart(frequencyCap)
+	frequencyChart=FrequencyChart(frequencyCap)
 	"""
 	timeAxis = [t1,t2,...,tn]
 	frequencyChart = [f1,f2,...,fm]
@@ -92,26 +92,27 @@ def FourierTransform(signal,samplingRate,verbose=False):
 	if verbose:
 		plt.subplot(2,1,1)
 		plt.plot(timeAxis,signal)
+		plt.title(title.upper())
 		plt.subplot(2,1,2)
 		plt.plot(frequencyChart,np.abs(fourier))
 		plt.show()
 	return fourier
-	
-			
-	
-def normalize(signal):
+		
+def Normalize(signal):
 	temp=signal-signal.min()
 	temp=temp/temp.std()
 	return(temp-temp.mean())
 	
-def createFrequencyChart(freqCap):
+def FrequencyChart(freqCap=20000):
 	# https://musicproductiontips.net/wp-content/uploads/pdf/musicproductiontips.net-Frequency_Chart__The_Most_Important_Audio_Frequency_Ranges-A4.pdf
 	return np.array(
 		list(range(20,min(60,freqCap),20))+list(range(60,min(120,freqCap),10))+list(range(120,min(350,freqCap),5))+list(range(350,min(2000,freqCap),20))+list(range(2000,min(8000,freqCap),100))+list(range(8000,min(20000,freqCap),300)))
 
 if(__name__=="__main__"):
-	temp_x,y=TsvToXY('D:/Dropbox/Workspace/03 Python/03 ML_DL_Correlation_Convolution-Exercise/Data/SoundPCM/PCM_45kHz.tsv')
-	x=np.array([np.array(data) for data in temp_x])
+	temp_x,y=TsvToXY('./Data/SoundPCM/PCM_45kHz.tsv')
+	x=np.array(temp_x)
+	#x=np.array([np.array(data) for data in temp_x])
+	fouriers=[]
 	for i in range(len(x)):
-		print(i, end="\t{0}\n\n".format(y[i]))
-		FourierTransform(x[i],7840)
+		print(y[i])
+		fouriers.append(FourierTransform(x[i],45000,y[i],True))

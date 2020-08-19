@@ -31,9 +31,7 @@
 *.out
 *.app
 
-*.bak
-*.dwl
-*.dwl2
-
 */build/
 *.swp
+
+*__pycache__/
