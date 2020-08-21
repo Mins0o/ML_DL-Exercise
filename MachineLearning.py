@@ -55,7 +55,7 @@ class MLExample:
 		x_feat=self.FeatureExtract(x)
 		clf.fit(x_feat,y)
 
-	def Evaluate(self,targetLabels=[],clfChoice=1,trainPercentage=70,verbose=True):
+	def Evaluate(self,targetLabels=[],clfChoice=1,trainPercentage=70,verbose=False):
 		warningMsg=""
 		errorMsg="\n"
 		if targetLabels==[]:
@@ -207,7 +207,6 @@ class MLExampleSound(MLExample):
 		except:
 			print("Sampling rate should be an integer in Hz")
 			return
-		self.samplingRate=rateInput
 		self.data = PCMFeature.TsvToLine(path+'Data/SoundPCM/'+dataFiles[selection])
 		self.clf1=BernoulliNB()
 		self.clf2=CategoricalNB()
@@ -216,6 +215,7 @@ class MLExampleSound(MLExample):
 		self.clf5=MultinomialNB()
 		self.clfList=[self.clf1,self.clf2,self.clf3,self.clf4,self.clf5]
 		self.FeatureFuncList=[self.F01,self.F02]
+		self.samplingRate=rateInput
 	
 	def F01(self, singlePcmStream):
 		"""Most dominant frequency"""
@@ -225,6 +225,10 @@ class MLExampleSound(MLExample):
 	def F02(self,singlePcmStream):
 		"""Random attempt"""
 		return np.array(singlePcmStream[:500]).mean()
+	
+	def LabelDistribution(self):
+		from nltk import FreqDist
+		print(FreqDist(self.XYSplit(self.data)[1]).most_common(4))
 		
 if __name__=="__main__":
 	"""
@@ -239,5 +243,5 @@ if __name__=="__main__":
 	
 	MLExS=MLExampleSound()
 	# def Evaluate(self,targetLabels=[],clfChoice=1,trainPercentage=70,verbose=True)
-	MLExS.Evaluate(["t"],1,80)
+	MLExS.Evaluate(["c"],1,80,verbose=False)
 	input()
