@@ -91,7 +91,7 @@ def FourierTransform(signal, samplingRate, title="", verbose = False):
 	fourier = signal.dot(imExpPlane)
 	if verbose:
 		plt.subplot(2, 1, 1)
-		plt.plot(timeAxis,s ignal)
+		plt.plot(timeAxis, signal)
 		plt.title(title.upper())
 		plt.subplot(2, 1, 2)
 		plt.plot(frequencyChart, np.abs(fourier))
