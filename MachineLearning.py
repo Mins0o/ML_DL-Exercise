@@ -2,7 +2,6 @@ import sklearn
 import random
 from nltk.corpus import names
 from sklearn.naive_bayes import *
-from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 import csv
 import PCMFeature
@@ -35,12 +34,12 @@ class MLExample:
 		return(shuffledData[:len(shuffledData) * ratio // 100], shuffledData[len(shuffledData) * ratio // 100:])
 				
 	def XYSplit(self, _dataWLabel):
-		"""This function unzips the data and splits <data> and <label> into two lists."""
+		"""This method unzips the data and splits <data> and <label> into two lists."""
 		return([line[:-1][0] for line in _dataWLabel], [line[-1] for line in _dataWLabel])
 	
 	def FeatureExtract(self, x_data):
-		"""This function returns
-		a list of features from a list of data"""
+		"""This method performs a list of functions on the x_data given and returns a list of the results.
+		If there were 3 functions, this method will give you a list of three elements."""
 		dataInFeatures = []
 		for datum in x_data:
 			singleFeatureList = []
@@ -71,6 +70,7 @@ class MLExample:
 		print("With {1}% of dataset, Training {0}".format(str(type(clf))[28:-2],trainPercentage))
 		train, test = self.TrainTestSplit(trainPercentage)
 		self.Fit(clf, train)
+		labels = list(set(self.XYSplit(self.data)[1]))
 		x_test, y_test = self.XYSplit(test)
 		x_feat = self.FeatureExtract(x_test)
 		try:
@@ -79,18 +79,27 @@ class MLExample:
 			# https://github.com/scikit-learn/scikit-learn/pull/16326
 			print("Index Error. Refer to github.com/scikit-learn/scikit-learn/pull/16326")
 			return
-		for trueLabel in confusion_matrix(y_test, predictions):
-			for pred in trueLabel:
-				print("{}\t".format(pred),end="")
+			
+		confusionMatrix = sklearn.metrics.confusion_matrix(y_test, predictions, labels)
+		print("\t", end = "")
+		for labelCaption in labels:
+			print("{}\t".format(labelCaption), end = "")
+		print()
+		for trueLabel in range(len(confusionMatrix)):
+			print("{}\t".format(labels[trueLabel]), end = "")
+			for pred in confusionMatrix[trueLabel]:
+				print("{}\t".format(pred), end = "")
 			print()
+		print("Accuracy: {}".format(sklearn.metrics.accuracy_score(y_test, predictions)))
 		if verbose:
 			try:
-				display = sklearn.metrics.plot_confusion_matrix(clf, x_feat, y_test, cmap = plt.cm.Blues, normalize = 'true')
+				display = sklearn.metrics.plot_confusion_matrix(clf, x_feat, y_test, labels = labels, cmap = plt.cm.Blues, normalize = 'true')
 				plt.show()
 			except IndexError:
 				print("Displaying confusion matrics - Index Error")
 
 	def PosNegAnalysis(self, targetLabels, clfChoice = 1, trainPercentage = 70):
+		"""This method is almost a legacy method and probably won't be so usefull"""
 		warningMsg = "\n"
 		errorMsg = "\n"
 		# Checking target label
@@ -240,17 +249,17 @@ class MLExampleSound(MLExample):
 		dataFiles = [file for file in listdir(path+'Data/SoundPCM/') if file[-4:] == ".tsv"]
 		for fileNum in range(len(dataFiles)):
 			print("{0:02d}\t{1}".format(fileNum, dataFiles[fileNum]))
-		selection = 0
-		#selection = int(input("Type in index of the .tsv file\n>>> "))
+		#selection = 0
+		selection = int(input("Type in index of the .tsv file\n>>> "))
 		print("{0} selected\n______________________________".format(dataFiles[selection]))
 		try:
-			rateInput = 45000
-			#rateInput = int(input("What is the sampling rate (Hz) of this data?\n>>> "))
+			#rateInput = 45000
+			rateInput = int(input("What is the sampling rate (Hz) of this data?\n>>> "))
 		except:
 			print("Sampling rate should be an integer in Hz")
 			return
 			
-		# I know it's pronounced 'RED' and writen as "read"
+		# I know it's pronounced 'RED' and writen as "read".
 		readedLines = PCMFeature.TsvToLine(path + 'Data/SoundPCM/' + dataFiles[selection])
 		self.data = [([line, readedLines[line][0]], readedLines[line][-1])for line in range(len(readedLines))]
 		"""Format of data:
@@ -272,7 +281,7 @@ class MLExampleSound(MLExample):
 		"""Most dominant frequency
 		Format of a singlePcmStream:
 		[index#, [PCM datapoint_0, ... , PCM datapoint_n]]"""
-		maxPoint = self.fourierData[singlePcmStream[0]].argmax()
+		maxPoint = np.abs(self.fourierData[singlePcmStream[0]]).argmax()
 		return(PCMFeature.FrequencyChart(self.samplingRate // 2)[maxPoint])
 	
 	def F02(self, singlePcmStream):
@@ -298,6 +307,5 @@ if __name__ == "__main__":
 	
 	MLExS = MLExampleSound()
 	# def Evaluate(self, clfChoice = 1, trainPercentage = 70, verbose = True)
-	MLExS.Evaluate(0, 80, verbose = False)
-	MLExS.LabelDistribution()
+	MLExS.Evaluate(1, 85, verbose = True)
 	input()

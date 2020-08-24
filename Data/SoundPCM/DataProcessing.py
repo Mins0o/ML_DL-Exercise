@@ -1,5 +1,6 @@
 from os import listdir
 import csv
+import random
 	
 def TsvToData(filePath):
 	with open(filePath,'r') as file:
@@ -65,7 +66,22 @@ def IncreaseFrequency(data, originalF, targetF):
 	pass
 
 def DecreaseFrequency(data, originalF, targetF):
-	pass
+	baseStep = originalF // targetF
+	randomAddPossibility = originalF % targetF
+	returnData = []
+	endOfList = False
+	index = 0
+	while not endOfList:
+		try:
+			returnData.append(data[index])
+		except IndexError:
+			endOfList = True			
+		if random.randrange(0, targetF) >= randomAddPossibility:
+			randomAddition = 0
+		else:
+			randomAddition = 1
+		index = index + baseStep + randomAddition
+	return returnData
 	
 if (__name__ == "__main__"):
 	filePath = input("What is the path of your data folder?\n>>> ")
