@@ -11,6 +11,10 @@ def TsvToData(filePath):
 	return(data, label)
 	
 def LoadFiles(filePath = None):
+	"""This method returns a dictionary of data which are divided into X and Y.
+	For example, if <file1.tsv>, <file2.tsv>, <file3.tsv> are loaded,
+	{"file1.tsv" : <data1>, "file2.tsv" : <data2>, "file3.tsv" : <data3>}
+	where each <data#> is formatted as ([data_0, ..., data_n], [label_0, ..., label_n])"""
 	if filePath == None:
 		path = input("What is the path of your data folder?\n>>> ")
 	else:
@@ -26,6 +30,7 @@ def LoadFiles(filePath = None):
 
 def TruncateToMinLength(dataCollection):
 	"""This method matches the length of the data by cutting off the tails of longer files"""
+	print("<<<TruncateToMinLength() in progress>>>")
 	# Get minimum length and file name of it
 	minLength = 9999999
 	fileName = ""
@@ -50,23 +55,60 @@ def TruncateToMinLength(dataCollection):
 				output[1].append(dataCollection[dataFile][1][i])
 	return output
 
-def SaveData(data, filePath = None):
+def ElongateToMaxLength(dataCollection):
+	"""This method matches the length of the data by inputing average value to the tails of shorter files"""
+	print("<<<ElongateToMaxLength() in progress>>>")
+	maxLength = 0
+	fileName = ""
+	for name in dataCollection:
+		data = dataCollection[name][0]
+		for singleDataStream in range(len(data)):
+			if len(data[singleDataStream]) > maxLength:
+				maxLength = len(data[singleDataStream])
+				fileName = "{0}, Line {1}".format(name, singleDataStream)
+	userAnswer = ""
+	while not(userAnswer.lower() == "y" or userAnswer.lower() == "n"):
+		userAnswer = input("The maximum length is {0} from {1}. Would you like to elongate the data?(Y/N)\n>>> ".format(maxLength, fileName))
+	
+	# Slice and return
+	if userAnswer.lower() == "y":
+		output = ([], [])
+		for dataFile in dataCollection:
+			for i in range(len(dataCollection[dataFile][0])):
+				_data=dataCollection[dataFile][0][i]
+				lastPoint=_data[-1]
+				avg = average(_data)
+				lenDiff = maxLength-len(_data)
+				output[0].append(_data + [int(round((lastPoint * (lenDiff - i) + avg * i)/ lenDiff)) for i in range(lenDiff)])
+				output[1].append(dataCollection[dataFile][1][i])
+	return output
+				
+def SaveData(data, filePath = None, fileName = "Processed"):
 	if filePath == None:
 		path = input("What is the path of your data folder?\n>>> ")
 	else:
 		path = filePath
-	with open(path + "\\Truncated.tsv",'w') as file:
+	with open(path + "\\{}.tsv".format(fileName), 'w') as file:
 		for lineNumber in range(len(data[0])):
 			file.write(",".join([str(x) for x in data[0][lineNumber]]) + "\t" + data[1][lineNumber] + "\n")
-	print("Saved the truncated and combined file")
+	print("Saved the processed file\n")
 
-def MatchFrequency(data, originalF, targetF):
+def MatchFrequency(dataCollection, originalF = 7840, targetF = 45000):
+	print("<<<MatchFrequency() in progress>>>")
+	output = ([], [])
+	print("Processing frequency match from {0} Hz to {1} Hz.".format(originalF, targetF))
 	if originalF > targetF:
-		return DecreaseFrequency(data, originalF, targetF)
+		process = DecreaseFrequency
 	elif originalF < targetF:
-		return IncreaseFrequency(data, originalF, targetF)
+		process = IncreaseFrequency
 	else:
-		return data
+		process = (lambda x, originalF, targetF : x)
+	for dataFile in dataCollection:
+		for i in range(len(dataCollection[dataFile][0])):
+			processedData = process(dataCollection[dataFile][0][i], originalF, targetF)
+			output[0].append(processedData)
+			output[1].append(dataCollection[dataFile][1][i])
+	return output
 
 def IncreaseFrequency(data, originalF, targetF):
 	"""This method uses interpolation to fill in the gaps"""
@@ -87,16 +129,16 @@ def IncreaseFrequency(data, originalF, targetF):
 			index += 1
 	return(returnData)
 			
-
-def interpolate(point1, point2, numberOfPoints):
+def interpolate(point1, point2, numberOfPoints, roundToInt = True):
 	"""<numberOfPoints> should be greater or equal to 1.
 	<numberOfPoints> is number of points from point1 until point2."""
 	if numberOfPoints == 1:
 		return([point1])
 	interval = (point2 - point1) / numberOfPoints
+	if roundToInt:
+		return([int(round(point1 + i * interval)) for i in range(numberOfPoints)])
 	return([point1 + i * interval for i in range(numberOfPoints)])
 	
-
 def DecreaseFrequency(data, originalF, targetF, avgOption = True):
 	"""Decrease frequency by sampling from original data.
 	This method uses psuedo random distribution to ensure it has rather uniform smapling rate match.
@@ -115,7 +157,7 @@ def DecreaseFrequency(data, originalF, targetF, avgOption = True):
 			for randomArrayIndex in range(targetF):
 				slice = data[prev:index]
 				if not slice == []:
-					returnData.append(average(slice))
+					returnData.append(int(round(average(slice))))
 				else:
 					endOfList = True
 					break
@@ -135,5 +177,7 @@ def DecreaseFrequency(data, originalF, targetF, avgOption = True):
 	
 if (__name__ == "__main__"):
 	filePath = input("What is the path of your data folder?\n>>> ")
-	SaveData(TruncateToMinLength(LoadFiles(filePath)), filePath)
+	SaveData(MatchFrequency(LoadFiles(filePath)), filePath)
+	SaveData(ElongateToMaxLength(LoadFiles(filePath)), filePath)
+	
 	

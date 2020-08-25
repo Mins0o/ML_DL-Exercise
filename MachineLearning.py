@@ -245,16 +245,16 @@ class MLExampleSound(MLExample):
 		4. Declare a FeatureFuncList"""
 		
 		
-		path = "D:/Dropbox/Workspace/03 Python/03 ML_DL_Correlation_Convolution-Exercise/"
+		path = "./"
 		dataFiles = [file for file in listdir(path+'Data/SoundPCM/') if file[-4:] == ".tsv"]
 		for fileNum in range(len(dataFiles)):
 			print("{0:02d}\t{1}".format(fileNum, dataFiles[fileNum]))
-		#selection = 0
-		selection = int(input("Type in index of the .tsv file\n>>> "))
+		selection = 0
+		#selection = int(input("Type in index of the .tsv file\n>>> "))
 		print("{0} selected\n______________________________".format(dataFiles[selection]))
 		try:
-			#rateInput = 45000
-			rateInput = int(input("What is the sampling rate (Hz) of this data?\n>>> "))
+			rateInput = 45000
+			#rateInput = int(input("What is the sampling rate (Hz) of this data?\n>>> "))
 		except:
 			print("Sampling rate should be an integer in Hz")
 			return
@@ -272,7 +272,7 @@ class MLExampleSound(MLExample):
 		self.clf4 = GaussianNB()
 		self.clf5 = MultinomialNB()
 		self.clfList = [self.clf1, self.clf2, self.clf3, self.clf4, self.clf5]
-		self.FeatureFuncList = [self.F01, self.F02]
+		self.FeatureFuncList = [self.F03, self.F02, self.F03]
 		self.samplingRate = rateInput
 		print("Reading and analyzing data. \nThis may take a while...")
 		self.fourierData= [PCMFeature.FourierTransform(datum[0][1], self.samplingRate) for datum in self.data]
@@ -285,9 +285,29 @@ class MLExampleSound(MLExample):
 		return(PCMFeature.FrequencyChart(self.samplingRate // 2)[maxPoint])
 	
 	def F02(self, singlePcmStream):
-		"""Random attempt
+		"""Duration
+		When does the wave become significant and insignificant?
 		[index#, [PCM datapoint_0, ... , PCM datapoint_n]]"""
-		return(np.array(singlePcmStream[1][:500]).mean())
+		PCM = PCMFeature.MaxNormalize(np.array(singlePcmStream[1]))
+		start = len(PCM)
+		finish = len(PCM)
+		inThreshold = 0.2
+		outThreshold = 0.2
+		stdThreshold = 0.016
+		localRadius = 40
+		for index in range(len(PCM)):
+			if index < start and abs(PCM[index]) > inThreshold:
+				start = index
+				index = min(index + len(PCM) // 10, len(PCM) - 1)
+			if index > (start + localRadius) and index < finish and abs(PCM[index]) < outThreshold and PCM[index-localRadius:index].std() < stdThreshold:
+				finish = index
+		duration = finish - start
+		return duration
+	
+	def F03(self, singlePcmStream):
+		"""Most dominant frequency among mid range"""
+		maxPoint = np.abs(self.fourierData[singlePcmStream[0]][50:150]).argmax()
+		return(PCMFeature.FrequencyChart(self.samplingRate // 2)[maxPoint+10])
 	
 	def LabelDistribution(self):
 		from nltk import FreqDist
@@ -307,5 +327,9 @@ if __name__ == "__main__":
 	
 	MLExS = MLExampleSound()
 	# def Evaluate(self, clfChoice = 1, trainPercentage = 70, verbose = True)
-	MLExS.Evaluate(1, 85, verbose = True)
+	for i in range(4):
+		MLExS.Evaluate(0, 85, verbose = False)
+		MLExS.Evaluate(1, 85, verbose = False)
+		MLExS.Evaluate(2, 85, verbose = False)
+		MLExS.Evaluate(3, 85, verbose = False)
 	input()

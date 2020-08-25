@@ -45,7 +45,7 @@ def FourierTransform(signal, samplingRate, title="", verbose = False):
 			print("FourierTransform(): Please input an numpy array")
 			return([])
 			
-	signal = Normalize(signal)
+	signal = StdNormalize(signal)
 	
 	frequencyChart = FrequencyChart(frequencyCap)
 	"""
@@ -98,9 +98,14 @@ def FourierTransform(signal, samplingRate, title="", verbose = False):
 		plt.show()
 	return(fourier)
 		
-def Normalize(signal):
+def StdNormalize(signal):
 	temp = signal - signal.min()
 	temp = temp / temp.std()
+	return(temp-temp.mean())
+
+def MaxNormalize(signal):
+	temp = signal - signal.min()
+	temp = temp / temp.max()
 	return(temp-temp.mean())
 	
 def FrequencyChart(freqCap = 20000):
