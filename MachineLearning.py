@@ -2,6 +2,7 @@ import sklearn
 import random
 from nltk.corpus import names
 from sklearn.naive_bayes import *
+from sklearn.tree import *
 import matplotlib.pyplot as plt
 import csv
 import PCMFeature
@@ -246,6 +247,7 @@ class MLExampleSound(MLExample):
 		
 		
 		path = "./"
+		#path = "D:/Dropbox/Workspace/03 Python/03 ML_DL_Correlation_Convolution-Exercise/"
 		dataFiles = [file for file in listdir(path+'Data/SoundPCM/') if file[-4:] == ".tsv"]
 		for fileNum in range(len(dataFiles)):
 			print("{0:02d}\t{1}".format(fileNum, dataFiles[fileNum]))
@@ -271,7 +273,9 @@ class MLExampleSound(MLExample):
 		self.clf3 = ComplementNB()
 		self.clf4 = GaussianNB()
 		self.clf5 = MultinomialNB()
-		self.clfList = [self.clf1, self.clf2, self.clf3, self.clf4, self.clf5]
+		self.clf6 = DecisionTreeClassifier()
+		self.clf7 = ExtraTreeClassifier()
+		self.clfList = [self.clf1, self.clf2, self.clf3, self.clf4, self.clf5, self.clf6, self.clf7]
 		self.FeatureFuncList = [self.F03, self.F02, self.F03]
 		self.samplingRate = rateInput
 		print("Reading and analyzing data. \nThis may take a while...")
@@ -325,11 +329,27 @@ if __name__ == "__main__":
 	MLExN.Evaluate(verbose = False)
 	"""
 	
-	MLExS = MLExampleSound()
+	try:
+		MLExS = MLExampleSound()
 	# def Evaluate(self, clfChoice = 1, trainPercentage = 70, verbose = True)
-	for i in range(4):
-		MLExS.Evaluate(0, 85, verbose = False)
-		MLExS.Evaluate(1, 85, verbose = False)
-		MLExS.Evaluate(2, 85, verbose = False)
-		MLExS.Evaluate(3, 85, verbose = False)
+		for i in range(4):
+			MLExS.Evaluate(0, 85, verbose = False)
+			print()
+			MLExS.Evaluate(1, 85, verbose = False)
+			print()
+			MLExS.Evaluate(2, 85, verbose = False)
+			print()
+			MLExS.Evaluate(3, 85, verbose = False)
+			print()
+			MLExS.Evaluate(4, 85, verbose = False)
+			print()
+			MLExS.Evaluate(5, 85, verbose = False)
+			print()
+			MLExS.Evaluate(6, 85, verbose = False)
+			print()
+	except Exception as e: 
+		print(e)
+	except Error as e:
+		print(e)
+		
 	input()
