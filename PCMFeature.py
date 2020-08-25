@@ -3,9 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def TsvToLine(filePath):
+	"""This method reads .tsv file and returns each line as an element of the return list"""
 	with open(filePath, 'r') as file:
 		lines = list(csv.reader(file, delimiter='\t'))
 		data = []
+		# for each line, split the PCM into a list
 		for line in lines:
 			try:
 				singleLine = ([int(x) for x in line[0].split(',')], line[-1])
@@ -15,22 +17,19 @@ def TsvToLine(filePath):
 	return data
 	
 def TsvToXY(filePath):
+	"""This method reads .tsv file and returns the data, XY split in a tuple"""
 	with open(filePath, 'r') as file:
 		lines = list(csv.reader(file, delimiter='\t'))
 		data = []
 		for line in lines:
+			# for each line, split the PCM into a list
 			listedLine = []
-			for collumn in line[:-1]:
-				try:
-					if len(line[:-1]) == 1:
-						listedLine = [int(x) for x in collumn.split(',')]
-					else:
-						listedLine.append([int(x) for x in collumn.split(',')])
-				except ValueError:
-					if len(line[:-1]) == 1:
-						listedLine = [int(x) for x in collumn.split(',')]
-					else:
-						listedLine.append([int(x) for x in collumn.split(',')])
+			for column in line[:-1]:
+				if len(line[:-1]) == 1:
+					listedLine = [int(x) for x in column.split(',')]
+				else:
+					# Multicolumn feature not yet implemented
+					listedLine.append([int(x) for x in column.split(',')])
 			data.append(listedLine)
 		label = [line[-1] for line in lines]
 	return(data, label)
