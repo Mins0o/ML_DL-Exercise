@@ -4,6 +4,7 @@ import csv
 import random
 	
 def TsvToData(filePath):
+	"""This method reads .tsv file and returns the data, XY split in a tuple"""
 	with open(filePath,'r') as file:
 		lines = list(csv.reader(file, delimiter = '\t'))
 		data = [[int(x) for x in line[0].split(',')] for line in lines]
@@ -57,20 +58,23 @@ def TruncateToMinLength(dataCollection):
 
 def ElongateToMaxLength(dataCollection):
 	"""This method matches the length of the data by inputing average value to the tails of shorter files"""
-	print("<<<ElongateToMaxLength() in progress>>>")
 	maxLength = 0
 	fileName = ""
+	
+	# Look for the max length
 	for name in dataCollection:
 		data = dataCollection[name][0]
 		for singleDataStream in range(len(data)):
 			if len(data[singleDataStream]) > maxLength:
 				maxLength = len(data[singleDataStream])
 				fileName = "{0}, Line {1}".format(name, singleDataStream)
+				
+	# User confirmation
 	userAnswer = ""
 	while not(userAnswer.lower() == "y" or userAnswer.lower() == "n"):
 		userAnswer = input("The maximum length is {0} from {1}. Would you like to elongate the data?(Y/N)\n>>> ".format(maxLength, fileName))
 	
-	# Slice and return
+	# Splice a fake tail to the data and return
 	if userAnswer.lower() == "y":
 		output = ([], [])
 		for dataFile in dataCollection:
@@ -84,6 +88,7 @@ def ElongateToMaxLength(dataCollection):
 	return output
 				
 def SaveData(data, filePath = None, fileName = "Processed"):
+	"""This method saves an XY-split data into a tsv file"""
 	if filePath == None:
 		path = input("What is the path of your data folder?\n>>> ")
 	else:
@@ -94,6 +99,7 @@ def SaveData(data, filePath = None, fileName = "Processed"):
 	print("Saved the processed file\n")
 
 def MatchFrequency(dataCollection, originalF = 7840, targetF = 45000):
+	"""This method compares the frequency difference and calls a data processing method accordingly"""
 	print("<<<MatchFrequency() in progress>>>")
 	output = ([], [])
 	print("Processing frequency match from {0} Hz to {1} Hz.".format(originalF, targetF))
