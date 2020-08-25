@@ -249,12 +249,12 @@ class MLExampleSound(MLExample):
 		dataFiles = [file for file in listdir(path+'Data/SoundPCM/') if file[-4:] == ".tsv"]
 		for fileNum in range(len(dataFiles)):
 			print("{0:02d}\t{1}".format(fileNum, dataFiles[fileNum]))
-		selection = 0
-		#selection = int(input("Type in index of the .tsv file\n>>> "))
+		#selection = 0
+		selection = int(input("Type in index of the .tsv file\n>>> "))
 		print("{0} selected\n______________________________".format(dataFiles[selection]))
 		try:
-			rateInput = 45000
-			#rateInput = int(input("What is the sampling rate (Hz) of this data?\n>>> "))
+			#rateInput = 45000
+			rateInput = int(input("What is the sampling rate (Hz) of this data?\n>>> "))
 		except:
 			print("Sampling rate should be an integer in Hz")
 			return
