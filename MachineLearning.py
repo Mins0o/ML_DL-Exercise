@@ -3,6 +3,7 @@ import random
 from nltk.corpus import names
 from sklearn.naive_bayes import *
 from sklearn.tree import *
+from sklearn.svm import *
 import matplotlib.pyplot as plt
 import csv
 import PCMFeature
@@ -21,7 +22,7 @@ class MLExample:
 		def feature_n to go in the FeatureFuncList
 		"""
 		self.data = [(1, 0.3, "a"),(2, -0.1, "b")]
-		self.clf1 = CategoricalNB()
+		self.clf1 = MultinomiallNB()
 		self.clfList = [self.clf1]
 		self.FeatureFuncList = [(lambda x : x)]
 
@@ -91,7 +92,7 @@ class MLExample:
 			for pred in confusionMatrix[trueLabel]:
 				print("{}\t".format(pred), end = "")
 			print()
-		print("Accuracy: {}".format(sklearn.metrics.accuracy_score(y_test, predictions)))
+		print("Accuracy: {:.4f}".format(sklearn.metrics.accuracy_score(y_test, predictions)))
 		if verbose:
 			try:
 				display = sklearn.metrics.plot_confusion_matrix(clf, x_feat, y_test, labels = labels, cmap = plt.cm.Blues, normalize = 'true')
@@ -201,12 +202,15 @@ class MLExampleNames(MLExample):
 	def __init__(self):
 		"""initiates with the data and all available NB classifier in sklearn"""
 		self.data=[(w.strip(),"M") for w in names.words("male.txt")]+[(w.strip(),"F") for w in names.words("female.txt")]
-		self.clf1=BernoulliNB()
-		self.clf2=CategoricalNB()
-		self.clf3=ComplementNB()
-		self.clf4=GaussianNB()
-		self.clf5=MultinomialNB()
-		self.clfList=[self.clf1,self.clf2,self.clf3,self.clf4,self.clf5]
+		self.clf1 = BernoulliNB()
+		self.clf2 = CategoricalNB()
+		self.clf3 = ComplementNB()
+		self.clf4 = GaussianNB()
+		self.clf5 = MultinomialNB()
+		self.clf6 = DecisionTreeClassifier()
+		self.clf7 = ExtraTreeClassifier()
+		self.clf8 = SVC()
+		self.clfList = [self.clf1, self.clf2, self.clf3, self.clf4, self.clf5, self.clf6, self.clf7, self.clf8]
 		self.FeatureFuncList=[self.F01,self.F02]
 			
 	#Feature01
@@ -246,17 +250,17 @@ class MLExampleSound(MLExample):
 		4. Declare a FeatureFuncList"""
 		
 		
-		path = "./"
-		#path = "D:/Dropbox/Workspace/03 Python/03 ML_DL_Correlation_Convolution-Exercise/"
+		#path = "./"
+		path = "D:/Dropbox/Workspace/03 Python/03 ML_DL_Correlation_Convolution-Exercise/"
 		dataFiles = [file for file in listdir(path+'Data/SoundPCM/') if file[-4:] == ".tsv"]
 		for fileNum in range(len(dataFiles)):
 			print("{0:02d}\t{1}".format(fileNum, dataFiles[fileNum]))
-		#selection = 0
-		selection = int(input("Type in index of the .tsv file\n>>> "))
+		selection = 1
+		#selection = int(input("Type in index of the .tsv file\n>>> "))
 		print("{0} selected\n______________________________".format(dataFiles[selection]))
 		try:
-			#rateInput = 45000
-			rateInput = int(input("What is the sampling rate (Hz) of this data?\n>>> "))
+			rateInput = 45000
+			#rateInput = int(input("What is the sampling rate (Hz) of this data?\n>>> "))
 		except:
 			print("Sampling rate should be an integer in Hz")
 			return
@@ -275,7 +279,8 @@ class MLExampleSound(MLExample):
 		self.clf5 = MultinomialNB()
 		self.clf6 = DecisionTreeClassifier()
 		self.clf7 = ExtraTreeClassifier()
-		self.clfList = [self.clf1, self.clf2, self.clf3, self.clf4, self.clf5, self.clf6, self.clf7]
+		self.clf8 = SVC()
+		self.clfList = [self.clf1, self.clf2, self.clf3, self.clf4, self.clf5, self.clf6, self.clf7, self.clf8]
 		self.FeatureFuncList = [self.F03, self.F02, self.F03]
 		self.samplingRate = rateInput
 		print("Reading and analyzing data. \nThis may take a while...")
@@ -331,21 +336,24 @@ if __name__ == "__main__":
 	
 	try:
 		MLExS = MLExampleSound()
+		trainRatio = 80
 	# def Evaluate(self, clfChoice = 1, trainPercentage = 70, verbose = True)
 		for i in range(4):
-			MLExS.Evaluate(0, 85, verbose = False)
+			#MLExS.Evaluate(0, trainRatio, verbose = False)
+			#print()
+			MLExS.Evaluate(1, trainRatio, verbose = False)
 			print()
-			MLExS.Evaluate(1, 85, verbose = False)
+			#MLExS.Evaluate(2, trainRatio, verbose = False)
+			#print()
+			MLExS.Evaluate(3, trainRatio, verbose = False)
 			print()
-			MLExS.Evaluate(2, 85, verbose = False)
+			MLExS.Evaluate(4, trainRatio, verbose = False)
 			print()
-			MLExS.Evaluate(3, 85, verbose = False)
+			MLExS.Evaluate(5, trainRatio, verbose = False)
 			print()
-			MLExS.Evaluate(4, 85, verbose = False)
+			MLExS.Evaluate(6, trainRatio, verbose = False)
 			print()
-			MLExS.Evaluate(5, 85, verbose = False)
-			print()
-			MLExS.Evaluate(6, 85, verbose = False)
+			MLExS.Evaluate(7, trainRatio, verbose = False)
 			print()
 	except Exception as e: 
 		print(e)
