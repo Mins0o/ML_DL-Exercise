@@ -8,4 +8,5 @@ For this exercises, I will be doing supervised classifications.
 This is how I first encountered the world of machine learning. I took an NLP course last semester and learned about classifiers for the first time.  
 I thought revisiting this example will be perfect as a warmup.
 ### Audio Classification
-This is an extension from my last project, the [Door Opener](https://github.com/Mins0o/Door_Opener), and I also wanted to experience machine learning development process in more extent: From data acquiring, processing to feature extraction and classifier experiments.
+This is an extension from my last project, the [Door Opener](https://github.com/Mins0o/Door_Opener). Carrying on from the project, I wanted to experience machine learning development process in more extent: From data acquiring, processing to feature extraction and classifier experiments.
+
