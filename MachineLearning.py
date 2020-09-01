@@ -250,13 +250,13 @@ class MLExampleSound(MLExample):
 		4. Declare a FeatureFuncList"""
 		
 		
-		#path = "./"
-		path = "D:/Dropbox/Workspace/03 Python/03 ML_DL_Correlation_Convolution-Exercise/"
+		path = "./"
+		#path = "D:/"
 		dataFiles = [file for file in listdir(path+'Data/SoundPCM/') if file[-4:] == ".tsv"]
 		for fileNum in range(len(dataFiles)):
 			print("{0:02d}\t{1}".format(fileNum, dataFiles[fileNum]))
-		selection = 1
-		#selection = int(input("Type in index of the .tsv file\n>>> "))
+		#selection = 1
+		selection = int(input("Type in index of the .tsv file\n>>> "))
 		print("{0} selected\n______________________________".format(dataFiles[selection]))
 		try:
 			rateInput = 45000
