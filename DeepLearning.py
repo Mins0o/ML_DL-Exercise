@@ -1,12 +1,14 @@
 import numpy as np
 import pandas as pd
-import torch
+#import torch
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.layers import *
 import random
 import matplotlib.pyplot as plt
 import os
+import PCMFeature
+import sklearn
 
 class DLExampleMnist:	
 	def __init__(self):
@@ -42,8 +44,8 @@ class DLExampleMnist:
 		
 		# check data
 		"""if verbose:
-			print(self.x_train.shape[0], 'train samples')
-			print(self.x_test.shape[0], 'test samples')
+			print(self.x_train[0].shape(), 'train samples')
+			print(self.x_test[0].shape(), 'test samples')
 			print("y_train")
 			print(self.y_train)	"""
 		
@@ -155,12 +157,148 @@ class DLExampleMnist:
 	model.add(Dense(128, activation = 'relu'))
 	model.add(Dropout(0.5))
 	model.add(Dense(units = 10, activation = 'softmax'))"""
+
+class DLExampleAudioPCM:
+	def __init__(self):
+		#path = "./"
+		path = "D:/Dropbox/Workspace/03 Python/03 ML_DL_Correlation_Convolution-Exercise/"
+		dataFiles = [file for file in os.listdir(path+'Data/SoundPCM/') if file[-4:] == ".tsv"]
+		for fileNum in range(len(dataFiles)):
+			print("{0:02d}\t{1}".format(fileNum, dataFiles[fileNum]))
+		#selection = 0
+		selection = int(input("Type in index of the .tsv file\n>>> "))
+		print("{0} selected\n______________________________".format(dataFiles[selection]))
+			
+		# I know it's pronounced 'RED' and writen as "read".
+		readedLines = PCMFeature.TsvToLine(path + 'Data/SoundPCM/' + dataFiles[selection])
+		self.data = [(readedLines[line][0], readedLines[line][-1])for line in range(len(readedLines))]
+		"""Format of data:
+		[([PCM datapoint_0, ... , PCM datapoint_n], label)...]
+		"""
+
+	def CreateModel(self, dropRate = 0.2):
+		# Batch size means how many data I will load and propagate.
+		# For 60,000 data, 1 epoch will take 6 propagation for batch size of 10,000.
+		# The network estimates with 10,000 datas and then adjust the weights
+		model = keras.models.Sequential()
+		"""
+		                   layer1       layer2     last layer
+		                     O            O            O
+		                     O            O            O
+			[][][]..[][][]  ==> ... 512   => ... 200   => ...   4  =>
+		     -inputShape-    O            O            O   (num_classes)
+		                     O            O            O
+		"""
+		
+		inputShape = len(self.data[0][0])
+		# layer 1
+		model.add(Dense(500, activation = 'relu', input_shape = (inputShape,)))
+		model.add(Dropout(dropRate))
+		# layer 2
+		model.add(Dense(200, activation = 'relu', input_shape = (500,)))
+		model.add(Dropout(dropRate))
+		# layer 3
+		model.add(Dense(200, activation = 'relu', input_shape = (200,)))
+		model.add(Dropout(dropRate))
+		# layer 4
+		model.add(Dense(200, activation = 'relu', input_shape = (200,)))
+		model.add(Dropout(dropRate))
+		# layer 5
+		model.add(Dense(200, activation = 'relu', input_shape = (200,)))
+		model.add(Dropout(dropRate))
+		# last layer
+		model.add(Dense(4, activation = 'softmax'))
+
+		model.summary()
+		
+		optimizer = keras.optimizers.Adam(lr = 0.0001)
+		model.compile(loss = 'categorical_crossentropy',
+					  metrics = ['accuracy'],
+					  optimizer = optimizer)
+		return model	
 	
+	def FitNewModel(self,
+					epochs = 300,
+					dropRate = 0.4,
+					verbose = 2, trainTestSplit = 77):
+		model = self.CreateModel(dropRate = dropRate)
+		
+		tempData = self.data.copy()
+		random.shuffle(tempData)
+		shuffledData = tempData
+		
+		#TrainTestSplit
+		trainIndexEnd = len(shuffledData) * trainTestSplit //100
+		trainLine = shuffledData[:trainIndexEnd]
+		testLine = shuffledData[trainIndexEnd:]
+		
+		#XYSPlit
+		x_train = np.array([PCMFeature.MaxNormalize(np.array(line[0])) for line in trainLine])
+		y_train = [line[-1] for line in trainLine]
+		x_test = np.array([PCMFeature.MaxNormalize(np.array(line[0])) for line in testLine])
+		y_test = [line[-1] for line in testLine]
+		
+		batch_size = len(y_train)//2
+		
+		numericalLabel_train = []
+		numericalLabel_test = []
+		for i in y_train:
+			if i == "t":
+				numericalLabel_train.append(0)
+			elif i == "s":
+				numericalLabel_train.append(1)
+			elif i == "c":
+				numericalLabel_train.append(2)
+			else:
+				numericalLabel_train.append(3)
+		for i in y_test:
+			if i == "t":
+				numericalLabel_test.append(0)
+			elif i == "s":
+				numericalLabel_test.append(1)
+			elif i == "c":
+				numericalLabel_test.append(2)
+			else:
+				numericalLabel_test.append(3)
+		
+		y_train = keras.utils.to_categorical(numericalLabel_train, num_classes = 4)
+		y_test = keras.utils.to_categorical(numericalLabel_test, num_classes = 4)
+		
+		checkpointPath = "./models/saved.mdel"
+		
+		"""alternative = input("If you would like to save your model, type in the file name." +
+							"ex)'test' or 'model_01'\nIf you do not wish to save the model," +
+							" just leave the input as black and hit return.\n>>> ")"""
+		if False and not(alternative == ""):
+			checkpointPath = "./models/" + alternative + ".mdel"
+			saveCheckpointCB = tf.keras.callbacks.ModelCheckpoint(filepath = checkpointPath,
+                                                 save_weights_only = True,
+                                                 verbose = 1)
+			print("\n>>>>>>>>>>>>>Training in progress...<<<<<<<<<<<<<<<")
+			history = model.fit(x_train, y_train,
+							batch_size = batch_size,
+							epochs = epochs,
+							callbacks = [saveCheckpointCB],
+							verbose = verbose,
+							validation_data = (x_test,y_test))
+		else:
+			print("\n>>>>>>>>>>>>>Training in progress...<<<<<<<<<<<<<<<")
+			history = model.fit(x_train, y_train,
+							batch_size = batch_size,
+							epochs = epochs,
+							verbose = verbose,
+							validation_data = (x_test,y_test))
+		print(">>>>>>>>>>>>>>---Training finished---<<<<<<<<<<<<<<\n")
+		return model
+		
+		
 if __name__ == "__main__":
-	test = DLExampleMnist()
+	"""test = DLExampleMnist()
 	#test.VisualizeMnistData()
 	model = test.FitNewModel()
 	test.Evaluate(model)
 	model2 = test.LoadModel()
 	test.Evaluate(model2)
-	input("Press any key...")
+	input("Press any key...")"""
+	test2 = DLExampleAudioPCM()
+	model3 = test2.FitNewModel()

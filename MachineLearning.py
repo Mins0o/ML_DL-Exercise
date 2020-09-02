@@ -32,8 +32,8 @@ class MLExample:
 		temp = self.data.copy()
 		random.shuffle(temp)
 		shuffledData = temp
-		testIndexEnd = len(shuffledData) * ratio // 100
-		return(shuffledData[:len(shuffledData) * ratio // 100], shuffledData[len(shuffledData) * ratio // 100:])
+		trainIndexEnd = len(shuffledData) * ratio // 100
+		return(shuffledData[:trainIndexEnd], shuffledData[trainIndexEnd:])
 				
 	def XYSplit(self, _dataWLabel):
 		"""This method unzips the data and splits <data> and <label> into two lists."""
