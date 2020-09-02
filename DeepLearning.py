@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import os
 import PCMFeature
 import sklearn
+from sklearn.metrics import confusion_matrix
 
 class DLExampleMnist:	
 	def __init__(self):
@@ -105,7 +106,7 @@ class DLExampleMnist:
 					batch_size = 5000,
 					epochs = 20,
 					dropRate = 0.2,
-					verbose = 0):
+					verbose = 2):
 		model = self.CreateModel(dropRate = dropRate)
 		
 		checkpointPath = "./models/saved.mdel"
@@ -158,10 +159,12 @@ class DLExampleMnist:
 	model.add(Dropout(0.5))
 	model.add(Dense(units = 10, activation = 'softmax'))"""
 
-class DLExampleAudioPCM:
+class DLExampleAudioPCM_woConv:
 	def __init__(self):
+		"""Constructor of this class only reads a data file.
+		This class has only one property which is self.data"""
 		#path = "./"
-		path = "D:/Dropbox/Workspace/03 Python/03 ML_DL_Correlation_Convolution-Exercise/"
+		path = "./"
 		dataFiles = [file for file in os.listdir(path+'Data/SoundPCM/') if file[-4:] == ".tsv"]
 		for fileNum in range(len(dataFiles)):
 			print("{0:02d}\t{1}".format(fileNum, dataFiles[fileNum]))
@@ -169,7 +172,6 @@ class DLExampleAudioPCM:
 		selection = int(input("Type in index of the .tsv file\n>>> "))
 		print("{0} selected\n______________________________".format(dataFiles[selection]))
 			
-		# I know it's pronounced 'RED' and writen as "read".
 		readedLines = PCMFeature.TsvToLine(path + 'Data/SoundPCM/' + dataFiles[selection])
 		self.data = [(readedLines[line][0], readedLines[line][-1])for line in range(len(readedLines))]
 		"""Format of data:
@@ -185,42 +187,40 @@ class DLExampleAudioPCM:
 		                   layer1       layer2     last layer
 		                     O            O            O
 		                     O            O            O
-			[][][]..[][][]  ==> ... 512   => ... 200   => ...   4  =>
+			[][][]..[][][]  ==> ... 500   => ... 200   => ...   4  =>
 		     -inputShape-    O            O            O   (num_classes)
 		                     O            O            O
 		"""
 		
 		inputShape = len(self.data[0][0])
 		# layer 1
-		model.add(Dense(500, activation = 'relu', input_shape = (inputShape,)))
+		model.add(Dense(5000, activation = 'relu', input_shape = (inputShape,)))
 		model.add(Dropout(dropRate))
 		# layer 2
-		model.add(Dense(200, activation = 'relu', input_shape = (500,)))
+		model.add(Dense(2000, activation = 'relu', input_shape = (5000,)))
 		model.add(Dropout(dropRate))
 		# layer 3
-		model.add(Dense(200, activation = 'relu', input_shape = (200,)))
+		model.add(Dense(1500, activation = 'relu', input_shape = (2000,)))
 		model.add(Dropout(dropRate))
 		# layer 4
-		model.add(Dense(200, activation = 'relu', input_shape = (200,)))
+		model.add(Dense(1000, activation = 'relu', input_shape = (1000,)))
 		model.add(Dropout(dropRate))
 		# layer 5
-		model.add(Dense(200, activation = 'relu', input_shape = (200,)))
+		model.add(Dense(500, activation = 'relu', input_shape = (1000,)))
 		model.add(Dropout(dropRate))
 		# last layer
 		model.add(Dense(4, activation = 'softmax'))
 
 		model.summary()
 		
-		optimizer = keras.optimizers.Adam(lr = 0.0001)
+		optimizer = keras.optimizers.Adam(lr = 0.0005)
 		model.compile(loss = 'categorical_crossentropy',
 					  metrics = ['accuracy'],
 					  optimizer = optimizer)
 		return model	
 	
-	def FitNewModel(self,
-					epochs = 300,
-					dropRate = 0.4,
-					verbose = 2, trainTestSplit = 77):
+	def FitNewModel(self, epochs = 120, dropRate = 0.65,
+					verbose = 2, trainTestSplit = 80):
 		model = self.CreateModel(dropRate = dropRate)
 		
 		tempData = self.data.copy()
@@ -289,16 +289,41 @@ class DLExampleAudioPCM:
 							verbose = verbose,
 							validation_data = (x_test,y_test))
 		print(">>>>>>>>>>>>>>---Training finished---<<<<<<<<<<<<<<\n")
-		return model
-		
+		return (model, (x_train, y_train), (x_test, y_test))
+	
+	def ConfusionMatrix(self, model, x, y):
+		pred = [i.argmax() for i in model.predict(x)]
+		trueL = [i.argmax() for i in y]
+		confusionMatrix = confusion_matrix(trueL, pred, [0, 1, 2, 3])
+		print("vT|P>\t", end = "")
+		labels = ["t", "s", "c", "w"]
+		for labelCaption in labels:
+			print("{}\t".format(labelCaption), end = "")
+		print()
+		for trueLabel in range(len(confusionMatrix)):
+			print("{}\t".format(labels[trueLabel]), end = "")
+			for pred in confusionMatrix[trueLabel]:
+				print("{}\t".format(pred), end = "")
+			print()
+
+	def Evaluate(self, model, test):
+		score = model.evaluate(test[0], test[1], verbose = 0)
+		print('Test loss: ', score[0])
+		print('Test Accuracy: ', score[1])
 		
 if __name__ == "__main__":
-	"""test = DLExampleMnist()
-	#test.VisualizeMnistData()
-	model = test.FitNewModel()
-	test.Evaluate(model)
-	model2 = test.LoadModel()
-	test.Evaluate(model2)
-	input("Press any key...")"""
-	test2 = DLExampleAudioPCM()
-	model3 = test2.FitNewModel()
+	"""# Experiment with mnist
+	mnistEx = DLExampleMnist()
+	#mnistEx.VisualizeMnistData()
+	model_MN_01 = mnistEx.FitNewModel(verbose = 2)
+	mnistEx.Evaluate(model_MN_01)
+	model_MN_02 = mnistEx.LoadModel()
+	mnistEx.Evaluate(model_MN_02)"""
+	
+	# Experiment with PCM
+	pcmEx = DLExampleAudioPCM_woConv()
+	model_pcm_01, pcm_train, pcm_test = pcmEx.FitNewModel(trainTestSplit = 80)
+	pcmEx.ConfusionMatrix(model_pcm_01, pcm_test[0], pcm_test[1])
+	pcmEx.Evaluate(model_pcm_01, pcm_test)
+	input("Press any key...")
+	
