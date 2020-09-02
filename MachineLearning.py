@@ -259,8 +259,8 @@ class MLExampleSound(MLExample):
 		selection = int(input("Type in index of the .tsv file\n>>> "))
 		print("{0} selected\n______________________________".format(dataFiles[selection]))
 		try:
-			rateInput = 45000
-			#rateInput = int(input("What is the sampling rate (Hz) of this data?\n>>> "))
+			#rateInput = 45000
+			rateInput = int(input("What is the sampling rate (Hz) of this data?\n>>> "))
 		except:
 			print("Sampling rate should be an integer in Hz")
 			return
