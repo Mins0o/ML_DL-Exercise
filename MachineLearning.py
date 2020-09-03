@@ -211,20 +211,43 @@ class MLExampleNames(MLExample):
 		self.clf7 = ExtraTreeClassifier()
 		self.clf8 = SVC()
 		self.clfList = [self.clf1, self.clf2, self.clf3, self.clf4, self.clf5, self.clf6, self.clf7, self.clf8]
-		self.FeatureFuncList=[self.F01,self.F02]
+		self.FeatureFuncList = [self.F01, self.F02, self.F03, self.F04, self.F05, self.F06]
 			
 	#Feature01
 	def F01(self, word):
 		"""Last Letter"""
 		#featureResult=ord(word[-1])
-		featureResult=ord(word[0][-1].lower())-32
+		featureResult = ord(word[-1].lower()) - 32
 		return featureResult
 		
-	#Feature02
+	#Feature02[
 	def F02(self, word):
 		"""First two Letters"""
 		#featureResult=float(int.from_bytes(bytes(word[0:2],"UTF8"),"big"))
-		featureResult=int.from_bytes(bytes(word[0][:2].lower(),"UTF8"),"little")
+		featureResult = int.from_bytes(bytes(word[:2].lower(),"UTF8"),"little")
+		return featureResult
+	
+	def F03(self, word):
+		"""Length of the name"""
+		featureResult = len(word)
+		return featureResult
+	
+	def F04(self, word):
+		"""number of m's"""
+		word = word.lower()
+		featureResult = word.count("m")
+		return featureResult
+	
+	def F05(self, word):
+		"""number of double L's"""
+		word = word.lower()
+		featureResult = word.count("ll")
+		return featureResult
+	
+	def F06(self, word):
+		"""If the name ends with 'ce'"""
+		word = word.lower()[-2:]
+		featureResult = word == "ce"
 		return featureResult
 				
 	def Run(self,clfChoice=1,trainPercentage=70):
@@ -323,8 +346,7 @@ class MLExampleSound(MLExample):
 		print(FreqDist(self.XYSplit(self.data)[1]).most_common(4))
 		
 if __name__ == "__main__":
-	"""
-	MLExN = MLExampleNames()
+	"""MLExN = MLExampleNames()
 	for clfChoice in range(5):
 		for trainingPercentage in range(10,91,10):
 			MLExN.Run(clfChoice, trainingPercentage)
