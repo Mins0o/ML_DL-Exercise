@@ -346,15 +346,15 @@ class MLExampleSound(MLExample):
 		print(FreqDist(self.XYSplit(self.data)[1]).most_common(4))
 		
 if __name__ == "__main__":
-	"""MLExN = MLExampleNames()
-	for clfChoice in range(5):
+	MLExN = MLExampleNames()
+	for clfChoice in range(8):
 		for trainingPercentage in range(10,91,10):
 			MLExN.Run(clfChoice, trainingPercentage)
 		print()
 	# def Evaluate(self, clfChoice = 1, trainPercentage = 70, verbose = True)
 	MLExN.PosNegAnalysis(["F"])
 	MLExN.Evaluate(verbose = False)
-	"""
+	
 	
 	try:
 		MLExS = MLExampleSound()
