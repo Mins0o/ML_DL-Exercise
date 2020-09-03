@@ -178,7 +178,7 @@ class DLExampleAudioPCM_woConv:
 		[([PCM datapoint_0, ... , PCM datapoint_n], label)...]
 		"""
 
-	def CreateModel(self, dropRate = 0.2):
+	def CreateModel(self, dropRate = 0.2, learningRate = 0.0005):
 		# Batch size means how many data I will load and propagate.
 		# For 60,000 data, 1 epoch will take 6 propagation for batch size of 10,000.
 		# The network estimates with 10,000 datas and then adjust the weights
@@ -213,13 +213,13 @@ class DLExampleAudioPCM_woConv:
 
 		model.summary()
 		
-		optimizer = keras.optimizers.Adam(lr = 0.0005)
+		optimizer = keras.optimizers.Adam(lr = learningRate)
 		model.compile(loss = 'categorical_crossentropy',
 					  metrics = ['accuracy'],
 					  optimizer = optimizer)
 		return model	
 	
-	def FitNewModel(self, epochs = 120, dropRate = 0.65,
+	def FitNewModel(self, epochs = 50, dropRate = 0.4,
 					verbose = 2, trainTestSplit = 80):
 		model = self.CreateModel(dropRate = dropRate)
 		

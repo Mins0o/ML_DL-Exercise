@@ -1,2 +1,2 @@
-model_checkpoint_path: "saved.mdel"
-all_model_checkpoint_paths: "saved.mdel"
+model_checkpoint_path: "mnistSave.mdel"
+all_model_checkpoint_paths: "mnistSave.mdel"
