@@ -184,12 +184,12 @@ class DLExampleAudioPCM_woConv:
 		# The network estimates with 10,000 datas and then adjust the weights
 		model = keras.models.Sequential()
 		"""
-		                   layer1       layer2     last layer
-		                     O            O            O
-		                     O            O            O
-			[][][]..[][][]  ==> ... 500   => ... 200   => ...   4  =>
-		     -inputShape-    O            O            O   (num_classes)
-		                     O            O            O
+		                   layer1           layer2     last layer
+		                     O                O            O
+		                     O                O            O
+			[][][]..[][][]  ==> ... 5000  => ... 2000  => ...   4  =>
+		     -inputShape-    O                O            O   (num_classes)
+		                     O                O            O
 		"""
 		
 		inputShape = len(self.data[0][0])
