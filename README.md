@@ -85,3 +85,5 @@ For all experiments, the train-test split was 80%.
 Data|data_1 | data_2 | data_1 | data_2 |  
 Accuracy (%) |86.67 | 95.83 | 76.67 | 70.83 |
 - I didn't have to be so creative to get results from DL like in ML. For ML feature extract for PCM, I learned a whole new concept and implementation of descrete Fourier trasform. But I also felt a strong down side of DL: without much data, it isn't that powerful enough.
+![Machine Learning pipeline](./images/ML.png)  
+![Deep Learning pipeline](./images/DL.png)
